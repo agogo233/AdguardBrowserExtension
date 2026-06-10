@@ -279,7 +279,8 @@ export abstract class AppCommon {
         // And set filters last update timestamp for issue reporting in MV3
         await filterUpdateService.init();
 
-        await Telemetry.init();
+        // Telemetry disabled for privacy: Do not track user behavior or send A/B test data
+        // await Telemetry.init();
 
         await sendMessage({ type: MessageType.AppInitialized });
 

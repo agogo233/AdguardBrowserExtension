@@ -1,0 +1,109 @@
+name: Build Extension - Artifacts
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+env:
+  TEST_RUN_ID: ${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  build:
+    name: Build Extensions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: |
+          pnpm config set store-dir /pnpm-store
+          pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
+
+      - name: Download resources
+        run: |
+          pnpm resources
+          pnpm resources:mv3
+
+      - name: Build Chrome (MV2)
+        run: |
+          pnpm dev chrome --zip
+
+      - name: Build Chrome (MV3)
+        run: |
+          pnpm dev chrome-mv3 --zip
+
+      - name: Build Edge
+        run: |
+          pnpm dev edge --zip
+
+      - name: Build Firefox (AMO)
+        run: |
+          pnpm dev firefox-amo --zip
+
+      - name: Build Firefox (Standalone)
+        run: |
+          pnpm dev firefox-standalone --zip
+
+      - name: Upload Chrome (MV2) to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-mv2
+          path: build/dev/chrome.zip
+          retention-days: 14
+
+      - name: Upload Chrome (MV3) to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-mv3
+          path: build/dev/chrome-mv3.zip
+          retention-days: 14
+
+      - name: Upload Edge to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: edge
+          path: build/dev/edge.zip
+          retention-days: 14
+
+      - name: Upload Firefox (AMO) to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: firefox-amo
+          path: build/dev/firefox-amo.zip
+          retention-days: 14
+
+      - name: Upload Firefox (Standalone) to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: firefox-standalone
+          path: build/dev/firefox-standalone.zip
+          retention-days: 14
+
+      - name: Upload Build Log to Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build/dev/build.txt
+          retention-days: 14

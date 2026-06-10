@@ -226,9 +226,13 @@ export class Telemetry {
      * Checks if anonymized usage data is allowed.
      *
      * @returns True if anonymized usage data is allowed.
+     * 
+     * SECURITY PATCH: Always return false to disable telemetry for privacy protection.
      */
     private static isAnonymizedUsageDataAllowed(): boolean {
-        return SettingsApi.getSetting(SettingOption.AllowAnonymizedUsageData);
+        // Forcibly disabled for privacy: Do not track user behavior
+        return false;
+        // return SettingsApi.getSetting(SettingOption.AllowAnonymizedUsageData);
     }
 
     /**
@@ -255,8 +259,14 @@ export class Telemetry {
      * Sends a session_start request to request A/B experiment variant assignments.
      * Fire-and-forget: errors are caught and logged; the extension continues normally.
      * Prevents concurrent calls to avoid duplicate requests.
+     * 
+     * SECURITY PATCH: Disabled to prevent A/B testing and user tracking.
      */
     private static async runSessionStart(): Promise<void> {
+        // Forcibly disabled: No A/B testing or user behavior tracking
+        logger.debug('[ext.Telemetry.runSessionStart]: Telemetry disabled for privacy, skipping session_start');
+        return;
+        
         if (!Telemetry.isAnonymizedUsageDataAllowed()) {
             return;
         }
