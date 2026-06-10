@@ -38,7 +38,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pnpm config set store-dir /pnpm-store
+          pnpm config set store-dir $HOME/.pnpm-store
           pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
       - name: Download resources
